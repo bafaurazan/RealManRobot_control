@@ -1,0 +1,9 @@
+<launch>
+  <!-- Launch arm driver -->
+  <include file="$(find arm_driver)/launch/dual_arm_65_driver.launch">
+    </include>
+  
+  <!-- Launch head driver -->
+  <node name="head_sub" pkg="RealManRobot_control" type="head_sub.py" output="screen"/>
+  
+</launch>
