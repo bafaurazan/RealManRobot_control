@@ -165,7 +165,20 @@ def mouthCloseAndOpen(state):
     pub_mouthCloseAndOpen.publish(msg)
     rospy.loginfo(f"Publishing mouthCloseAndOpen at {rospy.Time.now().to_sec()}")
 
-# Funkcja do synchronizacji audio i ruchów robota
+# Definicja zdarzeń w czasie jako słownik
+# Klucz: czas (float), Wartość: lista funkcji do wykonania (krotka: funkcja, argumenty)
+robot_actions = {
+    0.0: [(mata_hand_left, (500,)), (mata_hand_right, (500,))],
+    5.0: [(hand_left_close, (100,)), (hand_right_close, (900,))],
+    6.0: [(hand_left_open, (100,)), (hand_right_open, (900,))],
+    7.0: [(hand_left_close, (100,)), (hand_right_close, (900,))],
+    8.0: [(mata_hand_left, (500,)), (mata_hand_right, (500,)), (setEyelidsBlink, (False,)), (mouthCloseAndOpen, (True,))],
+    13.0: [(left_arm, ()), (right_arm, ())],
+    18.0: [(left_arm2, ()), (right_arm2, ())],
+    20.0: [(left_arm_mata, ()), (right_arm_mata, ()), (setEyelidsBlink, (True,)), (mouthCloseAndOpen, (False,))]
+}
+
+# Funkcja do synchronizacji audio i ruchów robota z użyciem słownika zdarzeń
 def play_audio_and_control_robot():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     generated_folder = os.path.join(script_dir, './lips_control/generate_servo_setup/generated')
@@ -207,6 +220,8 @@ def play_audio_and_control_robot():
 
     # Synchronizacja ruchów robota z audio
     start_time = time.time()
+    executed_events = set()  # Zbiór do śledzenia wykonanych zdarzeń
+
     for i, (t, angle) in enumerate(zip(times, angles)):
         expected_time = t
         sleep_time = expected_time - (time.time() - start_time)
@@ -214,40 +229,16 @@ def play_audio_and_control_robot():
         if sleep_time > 0:
             time.sleep(sleep_time)
 
-        # Wykonanie ruchów robota w zależności od czasu
-        if 0 <= t < 5:
-            mata_hand_left(500)
-            mata_hand_right(500)
-        elif 5 <= t < 6:
-            hand_left_close(100)
-            hand_right_close(900)
-        elif 6 <= t < 7:
-            hand_left_open(100)
-            hand_right_open(900)
-        elif 7 <= t < 8:
-            hand_left_close(100)
-            hand_right_close(900)
-        elif 8 <= t < 13:
-            mata_hand_left(500)
-            mata_hand_right(500)
-            setEyelidsBlink(False)
-            mouthCloseAndOpen(True)
-        elif 13 <= t < 18:
-            left_arm()
-            right_arm()
-        elif 18 <= t < 19:
-            left_arm2()
-            right_arm2()
-        elif t >= 20:
-            left_arm_mata()
-            right_arm_mata()
-            setEyelidsBlink(True)
-            mouthCloseAndOpen(False)
+        # Sprawdzenie, czy dany czas odpowiada zdarzeniu w słowniku
+        if t in robot_actions and t not in executed_events:
+            for action, args in robot_actions[t]:
+                action(*args)  # Wykonanie każdej funkcji z jej argumentami
+            executed_events.add(t)  # Oznaczenie zdarzenia jako wykonanego
 
-        rospy.loginfo(f"Czas: {t:.2f} s, Wykonano ruch robota")
+        rospy.loginfo(f"Czas: {t:.2f} s, Wykonano ruch robota: {angle:.2f}")
 
     play_obj.wait_done()
-
+    
 # Callback dla timera
 def timer_callback(event):
     current_time = rospy.Time.now().to_sec()
