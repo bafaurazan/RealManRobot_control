@@ -63,7 +63,7 @@ def map_amplitude_to_angle(amplitude, min_amplitude, max_amplitude):
     return np.interp(amplitude, [min_amplitude, max_amplitude], [0, 180])
 
 # Definiowanie zakresów czasowych do ustawienia domyślnej pozycji serwa
-default_angle = 90
+default_angle = 60
 excluded_intervals = [(0, 11.80),
                       (30.80, 39.20),
                       (65.90, 71.20),

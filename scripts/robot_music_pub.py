@@ -235,7 +235,10 @@ def play_audio_and_control_robot():
                 action(*args)  # Wykonanie każdej funkcji z jej argumentami
             executed_events.add(t)  # Oznaczenie zdarzenia jako wykonanego
 
-        rospy.loginfo(f"Czas: {t:.2f} s, Wykonano ruch robota: {angle:.2f}")
+        if angle > 80:
+            mouthCloseAndOpen(True)
+            rospy.loginfo(f"Czas: {t:.2f} s, singing{angle:.2f}")
+        rospy.loginfo(f"Czas: {t:.2f} s, Wykonano ruch: {angle:.2f}")
 
     play_obj.wait_done()
     
