@@ -1,0 +1,5 @@
+<launch>
+  
+  <node name="robot_music_pub" pkg="RealManRobot_control" type="robot_music_pub.py" output="screen"/>
+  
+</launch>
