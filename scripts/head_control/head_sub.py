@@ -4,7 +4,7 @@ import sys
 import os
 import rospy
 import serial
-from std_msgs.msg import Bool  # Using Bool message for simplicity
+from std_msgs.msg import Bool, Float64
 
 # Get script directory
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -16,13 +16,13 @@ PORT_NECK = '/dev/ttyUSB0'
 PORT_HEAD = '/dev/ttyUSB1'
 BAUDRATE = 115200
 
-HORIZONTAL_MIN_LEFT = 60
-HORIZONTAL_MAX_RIGHT = 160
-HORIZONTAL_MID = 105
+horizontalMinLeft = 60
+horizontalMaxRight = 160
+horizontalMid = 105
 
-VERTICAL_MIN = 150
-VERTICAL_MAX = 250
-VERTICAL_MID = 180
+verticalMin = 150
+verticalMax = 250
+verticalMid = 180
 
 class HeadController:
     def __init__(self):
@@ -43,6 +43,7 @@ class HeadController:
         # Subscriber for topics
         rospy.Subscriber('/set_eye_lids_blink', Bool, self.eyes_callback, queue_size=1)
         rospy.Subscriber('/mouth_close_and_open', Bool, self.mouth_callback, queue_size=1)
+        rospy.Subscriber('/horizontal_set_angle_time', Float64, self.neck_callback, queue_size=1)
         
     def mouth_callback(self, msg):
         if msg.data:  # If True is received
@@ -51,6 +52,9 @@ class HeadController:
     def eyes_callback(self, msg):
         if msg.data:  # If True is received
             self.setEyelidsBlink()
+            
+    def neck_callback(self, msg):
+        self.horizontalSetAngleTime(msg.data)
     
     def setEyelidsBlink(self):
         self.buf[0] = 255
@@ -79,6 +83,16 @@ class HeadController:
             rospy.loginfo(receive_data.decode('utf-8'))
         else:
             rospy.loginfo("No received data")
+            
+    def horizontalSetAngleTime(self,angle):
+        if angle < horizontalMinLeft:
+            angle = horizontalMinLeft
+		
+        elif angle > horizontalMaxRight:
+            angle = horizontalMaxRight
+
+        self.ser_horizontal.move_time_write(angle,1.5)
+        rospy.loginfo(f"NECK horizontal angle: {angle}, time: 1.5")
             
     def run(self):
         # Keep node running

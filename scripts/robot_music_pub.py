@@ -39,6 +39,7 @@ pub_hand_speed_r = None
 pub_hand_angle_r = None
 pub_mouthCloseAndOpen = None
 pub_setEyelidsBlink = None
+pub_horizontalSetAngleTime = None
 
 def hand_left_open(speed):
     msg = Hand_Angle()
@@ -165,6 +166,12 @@ def mouthCloseAndOpen(state):
     pub_mouthCloseAndOpen.publish(msg)
     rospy.loginfo(f"Publishing mouthCloseAndOpen at {rospy.Time.now().to_sec()}")
 
+def horizontalSetAngleTime(position):
+    msg = Float64()
+    msg.data = position
+    pub_horizontalSetAngleTime.publish(msg)
+    rospy.loginfo(f"Publishing horizontalSetAngleTime at {rospy.Time.now().to_sec()}")
+    
 # Definicja zdarzeń w czasie jako słownik
 # Klucz: czas (float), Wartość: lista funkcji do wykonania (krotka: funkcja, argumenty)
 robot_actions = {
@@ -254,7 +261,7 @@ def main():
     rospy.init_node('navigation_publisher', anonymous=True)
 
     # Inicjalizacja publisherów jako globalne zmienne
-    global pub_MoveJ_l, pub_MoveJ_r, pub_hand_speed_l, pub_hand_angle_l, pub_hand_speed_r, pub_hand_angle_r, pub_mouthCloseAndOpen, pub_setEyelidsBlink
+    global pub_MoveJ_l, pub_MoveJ_r, pub_hand_speed_l, pub_hand_angle_l, pub_hand_speed_r, pub_hand_angle_r, pub_mouthCloseAndOpen, pub_setEyelidsBlink, pub_horizontalSetAngleTime
     pub_MoveJ_l = rospy.Publisher('/l_arm/rm_driver/MoveJ_Cmd', MoveJ, queue_size=10)
     pub_MoveJ_r = rospy.Publisher('/r_arm/rm_driver/MoveJ_Cmd', MoveJ, queue_size=10)
     pub_hand_speed_l = rospy.Publisher('/l_arm/rm_driver/Hand_SetSpeed', Hand_Speed, queue_size=10)

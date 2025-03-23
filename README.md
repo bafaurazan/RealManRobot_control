@@ -76,7 +76,7 @@ roslaunch RealManRobot_control music_bringup.launch
 # main files description
 
 ## `scripts/head_control/head_sub.py`
-contain subscribers for only (open close eyes, open close lips)
+contain subscribers for head - for only (open close eyes, open close lips, neck horizontal angle)
 
 ## `/scripts/robot_music_pub.py`
 
